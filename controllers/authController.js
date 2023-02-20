@@ -15,7 +15,9 @@ exports.signup = catchAsync(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm
+    passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt: req.body.passwordChangedAt,
+    role: 'user'
   });
 
   const token = signToken(newUser._id);
@@ -96,3 +98,17 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser; // may be useful in the future
   next();
 });
+
+exports.restricTo = (...roles) => {
+  return (req, res, next) => {
+    // roles ['admin', 'lead-guide']. role='user'
+    if (!roles.includes(req.user.role)) {
+      // req.user we use <currentUser> in the above middleware that we assign it to <req.user> so if we run <protect> middleware before this middleware so we have <currentUser> data
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+
+    next();
+  };
+};
