@@ -59,6 +59,14 @@ userShema.pre('save', async function(next) {
   next();
 });
 
+// id: 111
+userShema.pre('save', function(next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000; // small hack
+  next();
+});
+
 userShema.methods.correctPassword = async function(
   candidatePassword,
   userPassword
